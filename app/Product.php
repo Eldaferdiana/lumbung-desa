@@ -4,13 +4,13 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Address extends Model
+class Product extends Model
 {
 
     protected $table = 'products';
 
     protected $fillable = [
-        'product_name', 'product_desc', 'product_price'
+        'id_category', 'product_name', 'product_desc', 'product_price', 'expired_at'
     ];
 
     public function store()
@@ -21,6 +21,11 @@ class Address extends Model
     public function category()
     {
         return $this->belongsTo('App\Category');
+    }
+
+    public function getProductImage()
+    {
+        return $this->hasMany('App\ProductImage');
     }
 
 }
