@@ -19,42 +19,55 @@ class UserController extends Controller
         //$this->middleware('auth');
     }
 
-    public function authenticate(Request $request)
-    {
-        if(!empty($request->input('msisdn')) && !empty($request->input('password'))){
-            $user = User::where('msisdn', $request->input('msisdn'))->first();
-            if(Hash::check($request->input('password'), $user->password)){
-                $apikey = base64_encode(str_random(40));
-                User::where('msisdn', $request->input('msisdn'))->update(['token' => "$apikey"]);;
-                return response()->json(['status' => true, 'message' => 'Authorized!', 'token' => $apikey]);
-            } else {
-                return response()->json(['status' => false, 'message' => 'Unauthorized!', 'token' => ''], 401);
-            }
-        } else {
-            return response()->json(['status' => false, 'message' => 'Bad Request!', 'token' => ''], 500);
-        }
-    }
-
     public function register(Request $request)
     {
-        if(!empty($request->input('msisdn')) && !empty($request->input('password')) && !empty($request->input('name'))) {
-            if(User::where('msisdn', $request->input('msisdn'))->count() == 0){
-                $msisdn = $request->input('msisdn');
-                $password = password_hash($request->input('password'), PASSWORD_DEFAULT);
-                $name = $request->input('name');
-                $insertId = User::create(['msisdn' => $msisdn, 'password' => $password, 'name' => $name]);
-                if($insertId){
-                    $apikey = base64_encode(str_random(40));
-                    User::where('msisdn', $request->input('msisdn'))->update(['token' => "$apikey"]);;
-                    return response()->json(['status' => true, 'message' => 'Register successfully!', 'token' => $apikey]);
-                } else {
-                    return response()->json(['status' => false, 'message' => 'User already registered!', 'token' => ''], 401);
-                }
+        $country = $request->input('country');
+        $state = $request->input('state');
+        $city = $request->input('city');
+        $kecamatan = $request->input('kecamatan');
+        $desa = $request->input('desa');
+        $road = $request->input('road');
+        $token = $request->input('notificationToken');
+
+        if(!empty($token) && !empty($country) && !empty($state) && !empty($city) && !empty($kecamatan) && !empty($desa) && !empty($road) && !empty($request->input('msisdn')) && !empty($request->input('name')) && !empty($request->header('Authorization'))) {
+            if ($request->header('Authorization')) {
+              $key = explode(' ',$request->header('Authorization'));
+              $jwt = $key[1];
+
+              //$debug = true;
+
+              $user = file_get_contents('http://alfarady.runup.web.id/jwt/test.php?jwt='.$jwt);
+              $user = json_decode($user);
+              if($user->status){
+                  if(time() <= $user->data->exp){
+                      if(User::where('msisdn', $request->input('msisdn'))->count() == 0){
+                          $msisdn = $request->input('msisdn');
+                          $name = $request->input('name');
+                          $insertId = User::create(['id' => $user->data->user_id, 'msisdn' => $msisdn, 'name' => $name, 'token' => $token]);
+                          if($insertId){
+                                $insertAddrId = User::where(['id' => $insertId->id])->first()->getAddress()->create(['country' => $country, 'state' => $state, 'city' => $city, 'kecamatan' => $kecamatan, 'desa' => $desa, 'road' => $road]);
+                                if($insertAddrId){
+                                    return response()->json(['status' => true, 'message' => 'Register successfully!']);
+                                } else {
+                                    return response()->json(['status' => false, 'message' => 'Something went wrong']);
+                                }
+                          } else {
+                                return response()->json(['status' => false, 'message' => 'User already registered!']);
+                          }
+                      } else {
+                          return response()->json(['status' => false, 'message' => 'User already exist!']);
+                      }
+                  } else {
+                      return response()->json(['status' => false, 'message' => 'Unauthorized!']);
+                  }
+              } else {
+                  return response()->json(['status' => false, 'message' => 'Unauthorized!']);
+              }
             } else {
-                return response()->json(['status' => false, 'message' => 'User already registered!', 'token' => ''], 401);
+                return response()->json(['status' => false, 'message' => 'Bad Request!']);
             }
         } else {
-            return response()->json(['status' => false, 'message' => 'Bad Request!', 'token' => ''], 500);
+            return response()->json(['status' => false, 'message' => 'Bad Request!']);
         }
     }
 

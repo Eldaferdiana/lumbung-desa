@@ -13,6 +13,10 @@ class Store extends Model
         'id_address', 'store_name', 'store_desc', 'store_status'
     ];
 
+    protected $hidden = [
+        'id_address', 'id_user', 'created_at', 'updated_at'
+    ];
+
     public function user()
     {
         return $this->belongsTo('App\User');

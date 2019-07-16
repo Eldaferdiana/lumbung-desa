@@ -13,6 +13,10 @@ class Address extends Model
         'country', 'state', 'city', 'kecamatan', 'desa', 'road'
     ];
 
+    protected $hidden = [
+        'id', 'id_user', 'created_at', 'updated_at'
+    ];
+
     public function user()
     {
         return $this->belongsTo('App\User');

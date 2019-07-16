@@ -15,8 +15,10 @@ class User extends Model implements Authenticatable
      *
      * @var array
      */
+    public $incrementing = false;
+    
     protected $fillable = [
-        'msisdn', 'name', 'password'
+        'id', 'msisdn', 'name', 'ava_url'
     ];
 
     /**
@@ -32,7 +34,15 @@ class User extends Model implements Authenticatable
         return $this->hasOne('App\Address','id_user');
     }
 
-    public function getStore(){
-        return $this->hasOne('App\Store','id_user');
+    public function products(){
+        return $this->hasMany('App\Product','id_seller');
+    }
+
+    public function getConversation(){
+        return $this->hasMany('App\Conversation', ['seller_id', 'buyer_id']);
+    }
+
+    public function getTransaction(){
+        return $this->hasMany('App\Transaction','id_buyer');
     }
 }

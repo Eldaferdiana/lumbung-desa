@@ -10,12 +10,12 @@ class Product extends Model
     protected $table = 'products';
 
     protected $fillable = [
-        'id_category', 'product_name', 'product_desc', 'product_price', 'expired_at'
+        'id_category', 'product_name', 'product_desc', 'product_price', 'product_stok', 'expired_at'
     ];
 
-    public function store()
+    public function seller()
     {
-        return $this->belongsTo('App\Store');
+        return $this->belongsTo('App\User', 'id_seller');
     }
 
     public function category()

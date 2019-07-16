@@ -18,4 +18,6 @@ class Category extends Model
         return $this->hasMany('App\Product','id_category');
     }
 
+    public $timestamps = false;
+
 }
